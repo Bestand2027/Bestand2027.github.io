@@ -1,0 +1,20 @@
+name: Auf Netlify veröffentlichen
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Deploy
+        run: npx --yes netlify-cli@17.38.1 deploy --prod --dir=public --no-build --message "Update von GitHub"
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: e3361305-2f02-4703-a6e9-e3d3706460df
