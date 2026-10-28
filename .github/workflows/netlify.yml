@@ -12,9 +12,21 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
       - name: Deploy
-        run: npx --yes netlify-cli@17.38.1 deploy --prod --dir=public --no-build --message "Update von GitHub"
         env:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
           NETLIFY_SITE_ID: e3361305-2f02-4703-a6e9-e3d3706460df
+        run: |
+          if [ -z "$NETLIFY_AUTH_TOKEN" ]; then
+            echo "::error::Secret NETLIFY_AUTH_TOKEN fehlt (Settings > Secrets and variables > Actions)."
+            exit 1
+          fi
+          set +e
+          npx --yes netlify-cli@17.38.1 deploy --prod --dir=public --no-build --message "Update von GitHub" > out.txt 2>&1
+          code=$?
+          cat out.txt
+          if [ $code -ne 0 ]; then
+            tail -n 15 out.txt | tr '\n' ' ' | sed 's/^/::error::/'; echo
+            exit $code
+          fi
