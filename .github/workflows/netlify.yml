@@ -23,7 +23,7 @@ jobs:
             exit 1
           fi
           set +e
-          npx --yes netlify-cli@17.38.1 deploy --prod --dir=public --no-build --message "Update von GitHub" > out.txt 2>&1
+          npx --yes netlify-cli@17.38.1 deploy --prod --dir=public --message "Update von GitHub" > out.txt 2>&1
           code=$?
           cat out.txt
           if [ $code -ne 0 ]; then
