@@ -78,6 +78,28 @@ main .wrap{padding-block:16px 48px}
 .err{color:var(--out);font-size:.88rem;margin:0}
 .big{width:100%;max-height:62vh;object-fit:contain;border-radius:12px;background:var(--bg)}
 .price.lg{font-size:1.4rem;padding:6px 14px}
+.row{cursor:default}
+.tap{display:flex;flex-direction:column;flex:1;background:none;border:0;padding:0;margin:0;text-align:left;font:inherit;color:inherit;cursor:pointer;width:100%}
+.tap:focus-visible,.qb:focus-visible,.qi:focus-visible,.wa:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.qty{display:flex;align-items:center;gap:6px;padding:0 12px 12px}
+.qb{width:40px;height:40px;flex:none;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink);font:700 1.2rem var(--f-body);cursor:pointer;display:grid;place-items:center}
+.qi{width:100%;min-width:0;height:40px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font:700 1rem var(--f-body);text-align:center;font-variant-numeric:tabular-nums;-moz-appearance:textfield}
+.qi::-webkit-outer-spin-button,.qi::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.qty.on .qi{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.qty.on .qb[data-d="1"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.cartbar{position:fixed;left:0;right:0;bottom:0;z-index:15;background:var(--surface);border-top:1px solid var(--line);box-shadow:0 -6px 20px rgba(0,0,0,.08);padding:12px max(16px,env(safe-area-inset-right,0px)) calc(12px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+.cartbar .in{max-width:860px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.cartbar .sum{display:grid;line-height:1.2;min-width:0}
+.cartbar .sum small{color:var(--muted);font-size:.82rem}
+.cartbar .sum strong{font:800 1.25rem var(--f-display);font-variant-numeric:tabular-nums}
+body.hascart main .wrap{padding-bottom:120px}
+.lines{display:grid;gap:8px;margin:0;padding:0;list-style:none}
+.lines li{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 12px;padding-bottom:8px;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums}
+.lines .ln{overflow-wrap:anywhere}
+.lines .lc{color:var(--muted);font-size:.86rem;grid-column:1}
+.lines .lt{font-weight:700;grid-row:1/3;grid-column:2;align-self:center}
+.total{display:flex;justify-content:space-between;align-items:baseline;font:800 1.3rem var(--f-display);font-variant-numeric:tabular-nums}
+.wa{display:flex;align-items:center;justify-content:center;gap:8px;text-decoration:none;font-size:1.05rem;padding:14px}
 .toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--surface);padding:10px 16px;border-radius:10px;font-weight:600;z-index:30;max-width:90vw}
 </style>
 <div id="app"></div>
@@ -115,10 +137,20 @@ main .wrap{padding-block:16px 48px}
       <p class="owner-note" id="onote" hidden>Nur du siehst die Knöpfe zum Bearbeiten. Tipp auf einen Artikel, um ihn zu ändern.</p>
       <div class="list" id="list"></div>
     </div></main>
+    <div class="cartbar" id="cartbar" hidden><div class="in">
+      <div class="sum"><small id="cartcount"></small><strong id="carttotal"></strong></div>
+      <button class="btn" id="cartopen">Bestellung ansehen</button>
+    </div></div>
     <div class="overlay" id="ov" hidden></div>`;
     $("q").addEventListener("input",e=>{query=e.target.value.trim().toLowerCase();render()});
     $("cats").addEventListener("click",e=>{const b=e.target.closest("[data-cat]");if(b){cat=b.dataset.cat;render()}});
-    $("list").addEventListener("click",e=>{const r=e.target.closest("[data-id]");if(!r)return;const it=S.items.find(x=>x.id===r.dataset.id);if(!it)return;owner?openItem(it):openView(it)});
+    $("list").addEventListener("click",e=>{
+      const qb=e.target.closest(".qb");
+      if(qb){const id=qb.closest(".qty").dataset.q;setQty(id,(cart[id]||0)+(+qb.dataset.d));return}
+      const r=e.target.closest(".tap");if(!r)return;const it=S.items.find(x=>x.id===r.dataset.id);if(!it)return;owner?openItem(it):openView(it)});
+    $("list").addEventListener("input",e=>{const q=e.target.closest(".qi");if(!q)return;const id=q.closest(".qty").dataset.q;setQty(id,parseInt(q.value,10)||0,true)});
+    $("list").addEventListener("focusin",e=>{const q=e.target.closest(".qi");if(q)q.select()});
+    $("cartopen").onclick=openCart;
     $("add").onclick=()=>openItem(null);
     $("settings").onclick=openSettings;
     $("ov").addEventListener("click",e=>{if(e.target.id==="ov")close()});
@@ -144,15 +176,23 @@ main .wrap{padding-block:16px 48px}
     }
     $("list").innerHTML=list.map(i=>{
       const unit=i.unit&&i.unit!=="Stück"?`<small>pro ${esc(i.unit)}</small>`:"";
-      return `<button class="row" data-id="${esc(i.id)}">
-        <div class="thumb">${i.photo?`<img src="${i.photo}" alt="">`:esc(String(i.name||"?").trim().charAt(0).toUpperCase())}</div>
-        <div class="info">
-          <p class="name">${esc(i.name)}</p>
-          ${i.note?`<p class="note">${esc(i.note)}</p>`:""}
-          ${i.category?`<div class="meta"><span class="cat">${esc(i.category)}</span></div>`:""}
+      const n=cart[i.id]||0;
+      return `<div class="row">
+        <button class="tap" data-id="${esc(i.id)}" aria-label="${esc(i.name)} ansehen">
+          <div class="thumb">${i.photo?`<img src="${i.photo}" alt="">`:esc(String(i.name||"?").trim().charAt(0).toUpperCase())}</div>
+          <div class="info">
+            <p class="name">${esc(i.name)}</p>
+            ${i.note?`<p class="note">${esc(i.note)}</p>`:""}
+            ${i.category?`<div class="meta"><span class="cat">${esc(i.category)}</span></div>`:""}
+          </div>
+          ${i.price!=null&&i.price!==""?`<div class="price">${eur.format(i.price)}${unit}</div>`:`<div class="price none">auf Anfrage</div>`}
+        </button>
+        <div class="qty${n?" on":""}" data-q="${esc(i.id)}">
+          <button class="qb" data-d="-1" aria-label="Eins weniger">−</button>
+          <input class="qi" id="q_${esc(i.id)}" type="number" inputmode="numeric" min="0" step="1" value="${n||""}" placeholder="0" aria-label="Anzahl ${esc(i.name)}">
+          <button class="qb" data-d="1" aria-label="Eins mehr">+</button>
         </div>
-        ${i.price!=null&&i.price!==""?`<div class="price">${eur.format(i.price)}${unit}</div>`:`<div class="price none">auf Anfrage</div>`}
-      </button>`}).join("");
+      </div>`}).join("");
   }
 
   function close(){if(saving)return;$("ov").hidden=true;$("ov").innerHTML=""}
@@ -250,7 +290,53 @@ main .wrap{padding-block:16px 48px}
     }
   }
 
-  shell(); render();
+  const WA="491630458386";
+  let cart={}; try{cart=JSON.parse(localStorage.getItem("warenkorb")||"{}")||{}}catch{cart={}}
+  function saveCart(){try{localStorage.setItem("warenkorb",JSON.stringify(cart))}catch{}}
+  function lines(){return S.items.filter(i=>cart[i.id]>0).map(i=>{const n=cart[i.id],p=(i.price!=null&&i.price!=="")?+i.price:null;return{i,n,p,t:p==null?null:Math.round(n*p*100)/100}})}
+  function setQty(id,n,fromInput){
+    n=Math.max(0,Math.min(9999,Math.floor(n)||0));
+    if(n)cart[id]=n;else delete cart[id];
+    saveCart();
+    const box=document.querySelector(`.qty[data-q="${CSS.escape(id)}"]`);
+    if(box){box.classList.toggle("on",!!n);const inp=box.querySelector(".qi");if(!fromInput)inp.value=n||""}
+    updateBar();
+  }
+  function updateBar(){
+    const L=lines(),pcs=L.reduce((a,l)=>a+l.n,0),tot=L.reduce((a,l)=>a+(l.t||0),0);
+    $("cartbar").hidden=!L.length; document.body.classList.toggle("hascart",!!L.length);
+    $("cartcount").textContent=`${pcs} Stück · ${L.length} ${L.length===1?"Artikel":"Artikel"}`;
+    $("carttotal").textContent=eur.format(tot);
+  }
+  function waText(name){
+    const L=lines(),tot=L.reduce((a,l)=>a+(l.t||0),0);
+    let t="Hallo, ich möchte gerne bestellen:\n\n";
+    L.forEach(l=>{t+=l.p==null?`${l.n} × ${l.i.name} (Preis auf Anfrage)\n`:`${l.n} × ${l.i.name} à ${eur.format(l.p)} = ${eur.format(l.t)}\n`});
+    t+=`\nGesamt: ${eur.format(tot)}`;
+    if(name)t+=`\n\nVon: ${name}`;
+    return t;
+  }
+  function openCart(){
+    const L=lines(); if(!L.length)return;
+    const tot=L.reduce((a,l)=>a+(l.t||0),0);
+    let nm=""; try{nm=localStorage.getItem("bestellname")||""}catch{}
+    $("ov").innerHTML=`<div class="sheet">
+      <h2>Deine Bestellung</h2>
+      <ul class="lines">${L.map(l=>`<li><span class="ln">${l.n} × ${esc(l.i.name)}</span><span class="lc">${l.p==null?"Preis auf Anfrage":"à "+eur.format(l.p)}</span><span class="lt">${l.t==null?"–":eur.format(l.t)}</span></li>`).join("")}</ul>
+      <div class="total"><span>Gesamt</span><span>${eur.format(tot)}</span></div>
+      <div class="field"><label for="cname">Dein Name oder Geschäft (optional)</label><input id="cname" maxlength="80" value="${esc(nm)}" placeholder="z. B. Kiosk Müller"></div>
+      <a class="btn wa" id="wa" target="_blank" rel="noopener">Per WhatsApp bestellen</a>
+      <p class="note" style="margin:0;text-align:center">WhatsApp öffnet sich mit deiner fertigen Bestellung. Du musst nur noch auf Senden tippen.</p>
+      <div class="actions"><button class="btn ghost" id="clr">Warenkorb leeren</button><div class="right"><button class="btn ghost" id="x">Weiter auswählen</button></div></div>
+    </div>`;
+    const upd=()=>{const v=$("cname").value.trim();try{localStorage.setItem("bestellname",v)}catch{};$("wa").href="https://wa.me/"+WA+"?text="+encodeURIComponent(waText(v))};
+    upd(); $("cname").addEventListener("input",upd);
+    $("x").onclick=close;
+    $("clr").onclick=()=>{if($("clr").dataset.sure){cart={};saveCart();close();render();updateBar()}else{$("clr").dataset.sure="1";$("clr").textContent="Wirklich leeren?"}};
+    $("ov").hidden=false;
+  }
+
+  shell(); render(); updateBar();
   (async()=>{
     if(!window.claude?.use) return;
     const [u,a]=await Promise.all([claude.use("user"),claude.use("artifact")]);
