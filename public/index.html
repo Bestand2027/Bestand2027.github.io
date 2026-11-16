@@ -182,6 +182,29 @@ body.hascart main .wrap{padding-bottom:128px}
 }
 .confetti{position:fixed;z-index:50;width:9px;height:14px;border-radius:2px;pointer-events:none}
 
+/* mobile fun: sound toggle, press feedback, +1, ripple, easter eggs */
+.topr{display:flex;gap:8px;align-items:center;flex:none}
+.snd{width:42px;height:42px;border-radius:14px;border:1px solid var(--line);background:var(--surface);font-size:1.15rem;display:grid;place-items:center;cursor:pointer;padding:0;transition:transform .12s}
+.snd:active{transform:scale(.88)}
+.bolt{cursor:pointer;user-select:none;-webkit-user-select:none;touch-action:manipulation}
+.bolt.zap{animation:zap .45s cubic-bezier(.2,1.6,.4,1)}
+@keyframes zap{40%{transform:rotate(-18deg) scale(1.25)}}
+.tap{transition:transform .15s cubic-bezier(.2,.8,.2,1)}
+.tap:active{transform:scale(.97)}
+.qb{position:relative;overflow:hidden;touch-action:manipulation}
+.ripple{position:absolute;border-radius:50%;background:rgba(255,255,255,.55);pointer-events:none;width:10px;height:10px;transform:translate(-50%,-50%)}
+.plus1{position:fixed;z-index:42;pointer-events:none;font:800 1.15rem var(--f-display);color:var(--a1);text-shadow:0 2px 8px color-mix(in srgb,var(--a1) 40%,transparent)}
+.thumb .price{user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;touch-action:manipulation}
+.drop{position:fixed;top:0;z-index:49;pointer-events:none;line-height:1}
+.flash{position:fixed;inset:0;z-index:48;pointer-events:none;background:radial-gradient(circle at 50% 10%,#fff,color-mix(in srgb,var(--tag) 60%,transparent) 60%,transparent)}
+.party .aurora{animation:hue 1.2s linear infinite}
+@keyframes hue{to{filter:hue-rotate(360deg)}}
+.party .aurora i{opacity:.6}
+.party h1{animation-duration:1.4s}
+.party .tap{animation:wiggle .5s ease-in-out 5;animation-delay:calc(var(--i,0)*60ms)}
+@keyframes wiggle{25%{transform:rotate(-2.5deg) scale(1.02)}75%{transform:rotate(2.5deg) scale(1.02)}}
+.party .marquee .track{animation-duration:5s}
+
 /* add-to-cart effects */
 .fly{position:fixed;z-index:40;object-fit:cover;border-radius:16px;pointer-events:none;box-shadow:0 10px 30px rgba(0,0,0,.3)}
 .spark{position:fixed;z-index:41;width:9px;height:9px;border-radius:50%;pointer-events:none}
@@ -209,12 +232,12 @@ body.hascart main .wrap{padding-bottom:128px}
     <div class="aurora" aria-hidden="true"><i></i><i></i><i></i></div>
     <section class="hero"><div class="wrap">
       <div class="top"><div class="brand">
-        <span class="bolt" aria-hidden="true"><svg viewBox="0 0 24 24" width="26" height="26"><path d="M13.5 2 5 13.5h5.2L9.5 22 19 9.8h-5.6z" fill="currentColor"/></svg></span>
+        <span class="bolt" id="bolt" aria-hidden="true"><svg viewBox="0 0 24 24" width="26" height="26"><path d="M13.5 2 5 13.5h5.2L9.5 22 19 9.8h-5.6z" fill="currentColor"/></svg></span>
         <h1 id="h1"></h1></div>
-        <div class="ownerbar" id="ownerbar" hidden>
+        <div class="topr"><div class="ownerbar" id="ownerbar" hidden>
           <button class="btn" id="add">+ Artikel</button>
           <button class="btn ghost" id="settings">Name</button>
-        </div></div>
+        </div><button class="snd" id="snd" type="button"></button></div></div>
       <p class="tagline" id="tagline"></p>
       <div class="pills"><span class="pill2 from" id="from" hidden></span><span class="pill2" id="sub"></span><span class="pill2 wa2">Bestellung per WhatsApp</span></div>
       <p class="contact" id="contact"></p>
@@ -233,15 +256,17 @@ body.hascart main .wrap{padding-bottom:128px}
       <button class="btn" id="cartopen">Bestellung ansehen</button>
     </div></div>
     <div class="overlay" id="ov" hidden></div>`;
-    $("q").addEventListener("input",e=>{query=e.target.value.trim().toLowerCase();render()});
+    $("q").addEventListener("input",e=>{query=e.target.value.trim().toLowerCase();if(["party","turbo","⚡"].includes(query)){party();e.target.value="";query=""}render()});
     $("cats").addEventListener("click",e=>{const b=e.target.closest("[data-cat]");if(b){cat=b.dataset.cat;render()}});
     $("list").addEventListener("click",e=>{
       const qb=e.target.closest(".qb");
-      if(qb){const id=qb.closest(".qty").dataset.q;setQty(id,(cart[id]||0)+(+qb.dataset.d));if(+qb.dataset.d>0)fx(qb);return}
+      if(qb){const id=qb.closest(".qty").dataset.q,d=+qb.dataset.d,had=cart[id]||0;setQty(id,had+d);ripple(qb,e);if(d>0)fx(qb,cart[id]);else if(had)SND.down();return}
+      if(noClick){noClick=false;return}
       const r=e.target.closest(".tap");if(!r)return;const it=S.items.find(x=>x.id===r.dataset.id);if(!it)return;owner?openItem(it):openView(it)});
     $("list").addEventListener("input",e=>{const q=e.target.closest(".qi");if(!q)return;const id=q.closest(".qty").dataset.q;setQty(id,parseInt(q.value,10)||0,true)});
     $("list").addEventListener("focusin",e=>{const q=e.target.closest(".qi");if(q)q.select()});
     $("cartopen").onclick=openCart;
+    eggs();
     $("add").onclick=()=>openItem(null);
     $("settings").onclick=openSettings;
     $("ov").addEventListener("click",e=>{if(e.target.id==="ov")close()});
@@ -308,10 +333,10 @@ body.hascart main .wrap{padding-bottom:128px}
       r.classList.add("tilt");r.style.transform=`perspective(800px) rotateX(${(.5-y)*9}deg) rotateY(${(x-.5)*11}deg) translateY(-4px)`;r.style.setProperty("--gx",x*100+"%");r.style.setProperty("--gy",y*100+"%")});
     L.addEventListener("pointerout",e=>{const r=e.target.closest(".row");if(r&&!r.contains(e.relatedTarget)){r.classList.remove("tilt");r.style.transform=""}});
   }
-  function confetti(){
+  function confetti(n){
     if(calm||!document.body.animate)return;
     const cols=["var(--a1)","var(--a2)","var(--a3)","var(--tag)","var(--wa)"],W=innerWidth,H=innerHeight;
-    for(let k=0;k<90;k++){const c=document.createElement("i");c.className="confetti";c.style.left=W/2+"px";c.style.top=H*.7+"px";c.style.background=cols[k%cols.length];document.body.appendChild(c);
+    for(let k=0;k<(n||90);k++){const c=document.createElement("i");c.className="confetti";c.style.left=W/2+"px";c.style.top=H*.7+"px";c.style.background=cols[k%cols.length];document.body.appendChild(c);
       const a=-Math.PI/2+(Math.random()-.5)*2.2,v=H*(.45+Math.random()*.45),dx=Math.cos(a)*v*.9,dy=Math.sin(a)*v,rot=(Math.random()*1080-540)|0;
       c.animate([{transform:"translate(-50%,-50%) rotate(0)",opacity:1},{transform:`translate(calc(-50% + ${dx}px),calc(-50% + ${dy}px)) rotate(${rot/2}deg)`,opacity:1,offset:.45},{transform:`translate(calc(-50% + ${dx*1.3}px),calc(-50% + ${dy+H*.75}px)) rotate(${rot}deg)`,opacity:0}],{duration:1600+Math.random()*900,easing:"cubic-bezier(.15,.6,.4,1)"}).onfinish=()=>c.remove()}
   }
@@ -327,7 +352,7 @@ body.hascart main .wrap{padding-bottom:128px}
       ${i.price!=null&&i.price!==""?`<span class="price lg">${eur.format(i.price)}${i.unit&&i.unit!=="Stück"?`<small>pro ${esc(i.unit)}</small>`:""}</span>`:""}</div>
       ${S.contact?`<p class="note" style="margin:0">Interesse? ${esc(S.contact)}</p>`:""}
       <button class="btn ghost" id="x">Schließen</button></div>`;
-    $("ov").hidden=false; $("x").onclick=close;
+    $("ov").hidden=false; $("x").onclick=close; SND.open();
   }
 
   function parsePrice(v){const n=parseFloat(String(v).replace(/\s|€/g,"").replace(/\.(?=\d{3}\b)/g,"").replace(",","."));return isFinite(n)&&n>=0?Math.round(n*100)/100:null}
@@ -424,13 +449,14 @@ body.hascart main .wrap{padding-bottom:128px}
     saveCart();
     const box=document.querySelector(`.qty[data-q="${CSS.escape(id)}"]`);
     if(box){box.closest(".row").classList.toggle("picked",!!n);const inp=box.querySelector(".qi");if(!fromInput)inp.value=n||""}
-    updateBar();
+    milestone(updateBar());
   }
   function updateBar(){
     const L=lines(),pcs=L.reduce((a,l)=>a+l.n,0),tot=L.reduce((a,l)=>a+(l.t||0),0);
     $("cartbar").hidden=!L.length; document.body.classList.toggle("hascart",!!L.length);
     $("cartcount").textContent=`${pcs} Stück · ${L.length} ${L.length===1?"Artikel":"Artikel"}`;
     countTo(tot);
+    return tot;
   }
   const calm=matchMedia("(prefers-reduced-motion: reduce)").matches;
   let shown=0,raf=0;
@@ -441,9 +467,12 @@ body.hascart main .wrap{padding-bottom:128px}
     raf=requestAnimationFrame(step);
   }
   function bump(){const c=$("cartbar");if(!c.hidden)c.querySelector(".in").animate([{transform:"scale(1)"},{transform:"scale(1.05)"},{transform:"scale(1)"}],{duration:320,easing:"ease-out"})}
-  function fx(btn){
+  function fx(btn,n){
     try{navigator.vibrate&&navigator.vibrate(12)}catch{}
+    SND.pop(n||1);
     if(calm||!btn.animate)return;
+    const pb=btn.getBoundingClientRect(),p1=document.createElement("b");p1.className="plus1";p1.textContent="+1";p1.style.left=pb.left+pb.width/2-12+"px";p1.style.top=pb.top-6+"px";document.body.appendChild(p1);
+    p1.animate([{transform:"translateY(0) scale(.6)",opacity:0},{transform:"translateY(-18px) scale(1.15)",opacity:1,offset:.3},{transform:"translateY(-46px) scale(1)",opacity:0}],{duration:700,easing:"ease-out"}).onfinish=()=>p1.remove();
     const row=btn.closest(".row"),img=row.querySelector(".thumb img"),inp=row.querySelector(".qi");
     inp.animate([{transform:"scale(1)"},{transform:"scale(1.18)"},{transform:"scale(1)"}],{duration:260,easing:"ease-out"});
     const b=btn.getBoundingClientRect(),cols=["var(--a1)","var(--a2)","var(--a3)"];
@@ -454,7 +483,78 @@ body.hascart main .wrap{padding-bottom:128px}
     const r=img.getBoundingClientRect(),t=$("carttotal").getBoundingClientRect(),g=img.cloneNode();
     g.className="fly";Object.assign(g.style,{left:r.left+"px",top:r.top+"px",width:r.width+"px",height:r.height+"px"});document.body.appendChild(g);
     const dx=t.left+t.width/2-(r.left+r.width/2),dy=t.top+t.height/2-(r.top+r.height/2);
-    g.animate([{transform:"translate(0,0) scale(1)",opacity:1},{transform:`translate(${dx*.45}px,${dy*.45-70}px) scale(.55)`,opacity:1,offset:.5},{transform:`translate(${dx}px,${dy}px) scale(.06)`,opacity:.3}],{duration:640,easing:"cubic-bezier(.5,0,.3,1)"}).onfinish=()=>{g.remove();bump()};
+    g.animate([{transform:"translate(0,0) scale(1)",opacity:1},{transform:`translate(${dx*.45}px,${dy*.45-70}px) scale(.55)`,opacity:1,offset:.5},{transform:`translate(${dx}px,${dy}px) scale(.06)`,opacity:.3}],{duration:640,easing:"cubic-bezier(.5,0,.3,1)"}).onfinish=()=>{g.remove();bump();SND.land()};
+  }
+
+  /* ---- sound (WebAudio synth, no files) ---- */
+  let AC=null,muted=false; try{muted=localStorage.getItem("ton")==="aus"}catch{}
+  function ac(){if(muted)return null;try{AC=AC||new(window.AudioContext||window.webkitAudioContext)();if(AC.state==="suspended")AC.resume();return AC}catch{return null}}
+  function tone(f,d,type,vol,when,slide){const a=ac();if(!a)return;const t=a.currentTime+(when||0),o=a.createOscillator(),g=a.createGain();
+    o.type=type||"sine";o.frequency.setValueAtTime(f,t);if(slide)o.frequency.exponentialRampToValueAtTime(slide,t+d);
+    g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(vol||.15,t+.01);g.gain.exponentialRampToValueAtTime(.0001,t+d);
+    o.connect(g).connect(a.destination);o.start(t);o.stop(t+d+.03)}
+  const SND={
+    pop:n=>{const k=Math.pow(1.06,Math.min(n,14));tone(500*k,.1,"triangle",.22,0,950*k)},
+    down:()=>tone(440,.09,"triangle",.14,0,250),
+    land:()=>{tone(1320,.06,"sine",.09);tone(1760,.1,"sine",.07,.05)},
+    coin:()=>{tone(988,.08,"square",.07);tone(1319,.35,"square",.07,.08)},
+    ching:()=>[1047,1319,1568,2093].forEach((f,k)=>tone(f,.22,"triangle",.13,k*.07)),
+    party:()=>[523,659,784,1047,784,1047,1319,1568].forEach((f,k)=>tone(f,.15,"square",.06,k*.085)),
+    zap:k=>tone(300+k*160,.08,"sawtooth",.06,0,600+k*240),
+    open:()=>tone(320,.12,"sine",.07,0,620),
+    shake:()=>[784,659,523].forEach((f,k)=>tone(f,.12,"triangle",.12,k*.09))
+  };
+  function sndIcon(){const b=$("snd");b.textContent=muted?"🔇":"🔊";b.setAttribute("aria-label",muted?"Ton einschalten":"Ton ausschalten")}
+
+  /* ---- little effects ---- */
+  let noClick=false;
+  function ripple(btn,e){if(calm||!btn.animate)return;const b=btn.getBoundingClientRect(),r=document.createElement("i");r.className="ripple";
+    r.style.left=(e.clientX?e.clientX-b.left:b.width/2)+"px";r.style.top=(e.clientY?e.clientY-b.top:b.height/2)+"px";btn.appendChild(r);
+    r.animate([{transform:"translate(-50%,-50%) scale(0)",opacity:1},{transform:"translate(-50%,-50%) scale(9)",opacity:0}],{duration:500,easing:"ease-out"}).onfinish=()=>r.remove()}
+  function rain(list,n){if(calm||!document.body.animate)return;n=n||34;
+    for(let k=0;k<n;k++){const d=document.createElement("span");d.className="drop";d.textContent=list[k%list.length];d.style.left=Math.random()*96+"vw";d.style.fontSize=18+Math.random()*22+"px";document.body.appendChild(d);
+      d.animate([{transform:"translateY(-12vh) rotate(0)"},{transform:`translateY(112vh) rotate(${(Math.random()*720-360)|0}deg)`}],{duration:1800+Math.random()*1600,delay:Math.random()*900,easing:"cubic-bezier(.4,0,.8,1)",fill:"backwards"}).onfinish=()=>d.remove()}}
+  function flash(){if(calm||!document.body.animate)return;const f=document.createElement("div");f.className="flash";document.body.appendChild(f);
+    f.animate([{opacity:0},{opacity:.95,offset:.08},{opacity:0,offset:.25},{opacity:.7,offset:.32},{opacity:0}],{duration:700}).onfinish=()=>f.remove()}
+  let partyT=0;
+  function party(){
+    SND.party();try{navigator.vibrate&&navigator.vibrate([30,40,30,40,90])}catch{}
+    flash();rain(["⚡","🔋","🎧","🔌","✨","💸"],44);confetti(70);
+    document.body.classList.add("party");clearTimeout(partyT);partyT=setTimeout(()=>document.body.classList.remove("party"),4200);
+    toast("⚡ Turbo-Modus aktiviert!");
+  }
+  const MS=[[10,"🔥 Über 10 € – läuft bei dir!"],[25,"💪 Großeinkauf-Modus an!"],[50,"🚀 50 € geknackt – Profi!"],[100,"👑 Einkaufs-Legende!"]];
+  let msHit=0;
+  function milestone(tot){
+    let k=0;while(k<MS.length&&tot>=MS[k][0])k++;
+    if(k>msHit){toast(MS[k-1][1]);SND.ching();confetti(40);try{navigator.vibrate&&navigator.vibrate([20,30,20])}catch{}}
+    msHit=k;
+  }
+  function eggs(){
+    sndIcon();
+    $("snd").onclick=()=>{muted=!muted;try{localStorage.setItem("ton",muted?"aus":"an")}catch{};sndIcon();if(!muted)SND.ching();toast(muted?"Ton aus":"Ton an 🎶")};
+    // Egg 1: tap the lightning logo 5× fast
+    let taps=0,tt=0;
+    $("bolt").addEventListener("click",()=>{
+      const b=$("bolt");b.classList.remove("zap");void b.offsetWidth;b.classList.add("zap");
+      clearTimeout(tt);taps++;SND.zap(taps);try{navigator.vibrate&&navigator.vibrate(8)}catch{}
+      if(taps>=5){taps=0;party();return}
+      tt=setTimeout(()=>taps=0,1400)});
+    // Egg 2: long-press a price tag → coin flip
+    let lp=0;
+    const stop=()=>clearTimeout(lp);
+    $("list").addEventListener("pointerdown",e=>{const p=e.target.closest(".thumb .price");if(!p)return;stop();
+      lp=setTimeout(()=>{noClick=true;SND.coin();try{navigator.vibrate&&navigator.vibrate([15,60,15])}catch{}
+        if(!calm&&p.animate)p.animate([{transform:"perspective(300px) rotateY(0) scale(1)"},{transform:"perspective(300px) rotateY(540deg) scale(1.5)",offset:.6},{transform:"perspective(300px) rotateY(720deg) scale(1)"}],{duration:900,easing:"cubic-bezier(.3,.7,.3,1)"});
+        rain(["🪙","💰","✨"],12)},480)});
+    ["pointerup","pointercancel","pointerleave","pointermove"].forEach(t=>$("list").addEventListener(t,e=>{if(t!=="pointermove"||Math.abs(e.movementX)+Math.abs(e.movementY)>6)stop()}));
+    $("list").addEventListener("contextmenu",e=>{if(e.target.closest(".thumb"))e.preventDefault()});
+    // Egg 3: shake the phone (Android; iOS would need a permission prompt)
+    if(window.DeviceMotionEvent&&typeof DeviceMotionEvent.requestPermission!=="function"){
+      let last=0;
+      addEventListener("devicemotion",e=>{const a=e.accelerationIncludingGravity;if(!a)return;const m=Math.hypot(a.x||0,a.y||0,a.z||0);const now=Date.now();
+        if(m>32&&now-last>2500){last=now;SND.shake();try{navigator.vibrate&&navigator.vibrate(60)}catch{};rain(["💸","🤑","💰","✨"],30);toast("Schütteln bringt nix – die Preise sind schon unten 😎")}});
+    }
   }
   function waText(name){
     const L=lines(),tot=L.reduce((a,l)=>a+(l.t||0),0);
@@ -479,13 +579,13 @@ body.hascart main .wrap{padding-bottom:128px}
     </div>`;
     const upd=()=>{const v=$("cname").value.trim();try{localStorage.setItem("bestellname",v)}catch{};$("wa").href="https://wa.me/"+WA+"?text="+encodeURIComponent(waText(v))};
     upd(); $("cname").addEventListener("input",upd);
-    $("wa").addEventListener("click",confetti);
+    $("wa").addEventListener("click",()=>{SND.ching();confetti();try{navigator.vibrate&&navigator.vibrate([20,40,60])}catch{}});
     $("x").onclick=close;
     $("clr").onclick=()=>{if($("clr").dataset.sure){cart={};saveCart();close();render();updateBar()}else{$("clr").dataset.sure="1";$("clr").textContent="Wirklich leeren?"}};
-    $("ov").hidden=false;
+    $("ov").hidden=false; SND.open();
   }
 
-  shell(); render(); updateBar(); tilt();
+  shell(); render(); {const t0=updateBar();msHit=MS.filter(m=>t0>=m[0]).length} tilt();
   (async()=>{
     if(!window.claude?.use) return;
     const [u,a]=await Promise.all([claude.use("user"),claude.use("artifact")]);
