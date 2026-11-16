@@ -156,7 +156,7 @@ body.hascart main .wrap{padding-bottom:128px}
 .total{display:flex;justify-content:space-between;align-items:baseline;font:800 1.45rem var(--f-display);font-variant-numeric:tabular-nums}
 .wa{display:flex;align-items:center;justify-content:center;gap:8px;text-decoration:none;font-size:1.08rem;padding:16px;border-radius:18px;background:var(--wa);color:var(--wa-ink);animation:pulse 2.2s ease-out infinite}
 @keyframes pulse{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--wa) 55%,transparent)}70%,100%{box-shadow:0 0 0 16px transparent}}
-.toast{position:fixed;left:50%;bottom:calc(96px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:12px;font-weight:600;z-index:30;max-width:90vw}
+.toast{position:fixed;left:50%;top:calc(14px + env(safe-area-inset-top,0px));transform:translateX(-50%);box-shadow:0 10px 30px rgba(0,0,0,.25);text-align:center;animation:tin .35s cubic-bezier(.2,1.4,.3,1);z-index:55!important;background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:12px;font-weight:600;z-index:30;max-width:90vw}
 
 /* wow: hero tagline, marquee, reveal, tilt, confetti */
 .tagline{margin:0;font:600 clamp(1rem,3.6vw,1.2rem)/1.35 var(--f-body);color:var(--muted);max-width:40ch;text-wrap:balance}
@@ -205,6 +205,64 @@ body.hascart main .wrap{padding-bottom:128px}
 @keyframes wiggle{25%{transform:rotate(-2.5deg) scale(1.02)}75%{transform:rotate(2.5deg) scale(1.02)}}
 .party .marquee .track{animation-duration:5s}
 
+/* v3: visible fun */
+@keyframes tin{from{transform:translate(-50%,-30px);opacity:0}}
+.bigwrap .big{max-height:42vh}
+.sprog{position:fixed;left:0;right:0;top:env(safe-area-inset-top,0px);height:3px;z-index:12;transform-origin:0 50%;transform:scaleX(0);background:linear-gradient(90deg,var(--a1),var(--a3),var(--a2));pointer-events:none}
+h1{animation:titleIn .9s cubic-bezier(.2,.8,.2,1) both,flow 9s linear infinite}
+@keyframes titleIn{from{opacity:0;transform:translateY(18px);filter:blur(10px);letter-spacing:.12em}}
+.fun{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:2px}
+.funbtn{position:relative;overflow:hidden;font:800 1rem var(--f-body);padding:14px 12px;border-radius:18px;border:0;cursor:pointer;color:#fff;display:flex;align-items:center;justify-content:center;gap:8px;touch-action:manipulation;transition:transform .12s;box-shadow:0 8px 24px color-mix(in srgb,var(--a1) 30%,transparent)}
+.funbtn:active{transform:scale(.95)}
+.funbtn .em{font-size:1.35rem;display:inline-block;animation:bob 1.8s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(-3px) rotate(-8deg)}}
+.funbtn.slotb{background:linear-gradient(135deg,#7b2ff7,var(--a1))}
+.funbtn.partyb{background:linear-gradient(135deg,var(--a3),#f7d02f);color:#2a1c00;box-shadow:0 8px 24px color-mix(in srgb,var(--a3) 35%,transparent)}
+.funbtn::after{content:"";position:absolute;inset:0;background:linear-gradient(110deg,transparent 35%,rgba(255,255,255,.45) 50%,transparent 65%);transform:translateX(-120%);animation:shine 3.8s ease-in-out infinite}
+.funbtn.partyb::after{animation-delay:1.2s}
+.chip .ci{margin-right:5px}
+/* slot machine */
+.reel{position:relative;height:230px;border-radius:22px;overflow:hidden;background:var(--tile);box-shadow:inset 0 0 0 3px color-mix(in srgb,var(--a1) 50%,transparent),inset 0 18px 24px -12px rgba(0,0,0,.25),inset 0 -18px 24px -12px rgba(0,0,0,.25)}
+.strip{display:flex;flex-direction:column;will-change:transform}
+.strip img{height:230px;width:100%;object-fit:contain;padding:14px;flex:none;display:block}
+.reel::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,rgba(0,0,0,.18),transparent 22%,transparent 78%,rgba(0,0,0,.18))}
+.reel.won{animation:won .6s ease-out}
+@keyframes won{30%{transform:scale(1.04)}}
+.slotres{min-height:84px;display:grid;gap:8px;text-align:center;justify-items:center}
+.slotres .name{font-size:1.1rem}
+.slotres.pop{animation:rise .45s cubic-bezier(.2,1.4,.3,1) both}
+.lights{display:flex;justify-content:space-between;padding:0 6px}
+.lights i{width:10px;height:10px;border-radius:50%;background:var(--tag);box-shadow:0 0 10px var(--tag);animation:blink .5s steps(1) infinite}
+.lights i:nth-child(even){animation-delay:.25s}
+@keyframes blink{50%{opacity:.25;box-shadow:none}}
+/* detail sheet stepper */
+.vstep{display:flex;align-items:center;gap:10px}
+.vstep .qb{width:52px;height:52px;border-radius:16px;font-size:1.5rem}
+.vstep b{min-width:44px;text-align:center;font:800 1.5rem var(--f-display);font-variant-numeric:tabular-nums}
+.big.kb{animation:kb 7s ease-in-out infinite alternate}
+@keyframes kb{to{transform:scale(1.08) translateY(-2%)}}
+.bigwrap{overflow:hidden;border-radius:18px}
+/* cart pill: thumbs + level */
+.cartbar .in{flex-wrap:wrap;row-gap:8px}
+.cth{display:flex;flex:none}
+.cth img,.cth span{width:34px;height:34px;border-radius:50%;object-fit:cover;background:var(--tile);border:2px solid var(--solid);margin-left:-12px;display:grid;place-items:center;font:800 .75rem var(--f-body);color:var(--tile-ink)}
+.cth>:first-child{margin-left:0}
+.cth img{animation:popin .4s cubic-bezier(.2,1.6,.4,1) both}
+@keyframes popin{from{transform:scale(0)}}
+.cartbar .sum{flex:1}
+.lvl{flex-basis:100%;display:grid;gap:4px;padding-right:8px}
+.lvl small{font-size:.76rem;font-weight:700;color:var(--muted)}
+.lvl .bar{height:7px;border-radius:9px;background:var(--line);overflow:hidden}
+.lvl .bar i{display:block;height:100%;width:100%;border-radius:9px;transform-origin:0 50%;background:linear-gradient(90deg,var(--a1),var(--a3),var(--tag));transition:transform .5s cubic-bezier(.2,1.2,.3,1)}
+/* intro */
+.intro{position:fixed;inset:0;z-index:60;display:grid;place-items:center;align-content:center;gap:16px;background:radial-gradient(circle at 50% 45%,color-mix(in srgb,var(--a1) 35%,var(--bg)),var(--bg) 70%);cursor:pointer}
+.intro .ib{width:110px;height:110px;border-radius:32px;display:grid;place-items:center;color:#fff;background:linear-gradient(135deg,var(--a1),var(--a3));box-shadow:0 0 60px color-mix(in srgb,var(--a3) 70%,transparent);animation:ibIn .7s cubic-bezier(.2,1.6,.4,1) both}
+.intro .ib svg{width:62px;height:62px;filter:drop-shadow(0 0 12px #fff)}
+.intro .it{font:800 1.9rem var(--f-display);letter-spacing:-.02em;color:var(--ink);animation:titleIn .7s .25s cubic-bezier(.2,.8,.2,1) both}
+@keyframes ibIn{from{transform:scale(0) rotate(-200deg)}}
+.intro .ring{position:absolute;left:50%;top:50%;width:110px;height:110px;margin:-55px 0 0 -55px;border-radius:50%;border:3px solid var(--a3);animation:ring 1.1s .35s ease-out both}
+@keyframes ring{from{transform:scale(.5);opacity:1}to{transform:scale(7);opacity:0}}
+
 /* add-to-cart effects */
 .fly{position:fixed;z-index:40;object-fit:cover;border-radius:16px;pointer-events:none;box-shadow:0 10px 30px rgba(0,0,0,.3)}
 .spark{position:fixed;z-index:41;width:9px;height:9px;border-radius:50%;pointer-events:none}
@@ -230,6 +288,7 @@ body.hascart main .wrap{padding-bottom:128px}
   function shell(){
     $("app").innerHTML=`
     <div class="aurora" aria-hidden="true"><i></i><i></i><i></i></div>
+    <div class="sprog" id="sprog" aria-hidden="true"></div>
     <section class="hero"><div class="wrap">
       <div class="top"><div class="brand">
         <span class="bolt" id="bolt" aria-hidden="true"><svg viewBox="0 0 24 24" width="26" height="26"><path d="M13.5 2 5 13.5h5.2L9.5 22 19 9.8h-5.6z" fill="currentColor"/></svg></span>
@@ -241,6 +300,7 @@ body.hascart main .wrap{padding-bottom:128px}
       <p class="tagline" id="tagline"></p>
       <div class="pills"><span class="pill2 from" id="from" hidden></span><span class="pill2" id="sub"></span><span class="pill2 wa2">Bestellung per WhatsApp</span></div>
       <p class="contact" id="contact"></p>
+      <div class="fun"><button class="funbtn slotb" id="slotbtn" type="button"><span class="em">🎰</span>Überrasch mich</button><button class="funbtn partyb" id="partybtn" type="button"><span class="em">🎉</span>Party-Modus</button></div>
     </div></section>
     <div class="marquee" aria-hidden="true"><div class="track" id="mq"></div></div>
     <div class="toolbar" id="toolbar"><div class="wrap">
@@ -252,16 +312,17 @@ body.hascart main .wrap{padding-bottom:128px}
       <div class="list" id="list"></div>
     </div></main>
     <div class="cartbar" id="cartbar" hidden><div class="in">
+      <div class="cth" id="cth"></div>
       <div class="sum"><small id="cartcount"></small><strong id="carttotal"></strong></div>
-      <button class="btn" id="cartopen">Bestellung ansehen</button>
+      <button class="btn" id="cartopen">Bestellen 🛒</button>
+      <div class="lvl"><small id="lvltxt"></small><div class="bar"><i id="lvlbar"></i></div></div>
     </div></div>
     <div class="overlay" id="ov" hidden></div>`;
-    $("q").addEventListener("input",e=>{query=e.target.value.trim().toLowerCase();if(["party","turbo","⚡"].includes(query)){party();e.target.value="";query=""}render()});
+    $("q").addEventListener("input",e=>{query=e.target.value.trim().toLowerCase();render()});
     $("cats").addEventListener("click",e=>{const b=e.target.closest("[data-cat]");if(b){cat=b.dataset.cat;render()}});
     $("list").addEventListener("click",e=>{
       const qb=e.target.closest(".qb");
       if(qb){const id=qb.closest(".qty").dataset.q,d=+qb.dataset.d,had=cart[id]||0;setQty(id,had+d);ripple(qb,e);if(d>0)fx(qb,cart[id]);else if(had)SND.down();return}
-      if(noClick){noClick=false;return}
       const r=e.target.closest(".tap");if(!r)return;const it=S.items.find(x=>x.id===r.dataset.id);if(!it)return;owner?openItem(it):openView(it)});
     $("list").addEventListener("input",e=>{const q=e.target.closest(".qi");if(!q)return;const id=q.closest(".qty").dataset.q;setQty(id,parseInt(q.value,10)||0,true)});
     $("list").addEventListener("focusin",e=>{const q=e.target.closest(".qi");if(q)q.select()});
@@ -286,7 +347,7 @@ body.hascart main .wrap{padding-bottom:128px}
     const mq=[...cats,"Bestellung per WhatsApp",...(avail.length?["Preise ab "+eur.format(Math.min(...avail))]:[]),"Einfach Menge wählen"].map(t=>`<span>${esc(t)}</span>`).join("");
     $("mq").innerHTML=mq+mq+mq+mq;
     if(cat!=="Alle"&&!cats.includes(cat)) cat="Alle";
-    $("cats").innerHTML=cats.length>1?["Alle",...cats].map(c=>`<button class="chip" data-cat="${esc(c)}" aria-pressed="${c===cat}">${esc(c)}</button>`).join(""):"";
+    $("cats").innerHTML=cats.length>1?["Alle",...cats].map(c=>`<button class="chip" data-cat="${esc(c)}" aria-pressed="${c===cat}"><span class="ci" aria-hidden="true">${catIcon(c)}</span>${esc(c)}</button>`).join(""):"";
     $("cats").hidden=cats.length<2;
     $("q").hidden=S.items.length<6;
     $("toolbar").hidden=$("q").hidden&&$("cats").hidden;
@@ -303,7 +364,7 @@ body.hascart main .wrap{padding-bottom:128px}
       return `<div class="row${i.soldout?" sold":""}${n&&!i.soldout?" picked":""}" style="--i:${idx%4}">
         <button class="tap" data-id="${esc(i.id)}" aria-label="${esc(i.name)} ansehen">
           <div class="thumb">${i.photo?`<img src="${i.photo}" alt="">`:esc(String(i.name||"?").trim().charAt(0).toUpperCase())}
-            ${i.price!=null&&i.price!==""?`<span class="price">${eur.format(i.price)}${unit}</span>`:`<span class="price none">auf Anfrage</span>`}
+            ${i.price!=null&&i.price!==""?`<span class="price" data-v="${+i.price}"><b class="pv">${eur.format(i.price)}</b>${unit}</span>`:`<span class="price none">auf Anfrage</span>`}
             ${i.soldout?`<span class="ribbon">Ausverkauft</span>`:i.pack==="ovp"?`<span class="pack" title="In Originalverpackung"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" aria-hidden="true"><path d="M3 7.5 12 3l9 4.5v9L12 21l-9-4.5z"/><path d="M3 7.5 12 12l9-4.5M12 12v9"/></svg>OVP</span>`:i.pack==="lose"?`<span class="pack loose" title="Ohne Verpackung">Ohne OVP</span>`:""}</div>
           <div class="info">
             <p class="name">${esc(i.name)}</p>
@@ -323,9 +384,13 @@ body.hascart main .wrap{padding-bottom:128px}
   function reveal(){
     const rows=[...document.querySelectorAll("#list .row")];
     if(calm||!("IntersectionObserver" in window)){rows.forEach(r=>r.classList.add("vis"));return}
-    io=io||new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add("vis");io.unobserve(e.target)}}),{rootMargin:"0px 0px -6% 0px"});
+    io=io||new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add("vis");io.unobserve(e.target);roll(e.target)}}),{rootMargin:"0px 0px -6% 0px"});
     rows.forEach(r=>io.observe(r));
   }
+  function roll(row){
+    const pr=row.querySelector(".price[data-v]");if(!pr||row.classList.contains("sold"))return;const b=pr.querySelector(".pv"),v=+pr.dataset.v,t0=performance.now()+200+(+getComputedStyle(row).getPropertyValue("--i")||0)*55;
+    const st=t=>{const k=Math.max(0,Math.min(1,(t-t0)/750)),e=1-Math.pow(1-k,4);b.textContent=eur.format(Math.round(v*e*100)/100);if(k<1)requestAnimationFrame(st)};requestAnimationFrame(st)}
+  function catIcon(c){c=String(c).toLowerCase();return c==="alle"?"✨":/kopfh|audio|ohr|sound/.test(c)?"🎧":/kabel/.test(c)?"🔌":/elektr|lade|power|akku/.test(c)?"⚡":/handy|phone|hülle/.test(c)?"📱":"🛍️"}
   function tilt(){
     if(calm||!matchMedia("(hover:hover) and (pointer:fine)").matches)return;
     const L=$("list");
@@ -344,15 +409,19 @@ body.hascart main .wrap{padding-bottom:128px}
   function close(){if(saving)return;$("ov").hidden=true;$("ov").innerHTML=""}
   function openView(i){
     $("ov").innerHTML=`<div class="sheet">
-      ${i.photo?`<img class="big" src="${i.photo}" alt="">`:""}
+      ${i.photo?`<div class="bigwrap"><img class="big${calm?"":" kb"}" src="${i.photo}" alt=""></div>`:""}
       <h2>${esc(i.name)}</h2>
       ${i.note?`<p class="note" style="margin:0">${esc(i.note)}</p>`:""}
       ${i.pack==="ovp"?`<p class="note" style="margin:0">In Originalverpackung</p>`:i.pack==="lose"?`<p class="note" style="margin:0">Ohne Verpackung</p>`:""}
       <div class="actions">
       ${i.price!=null&&i.price!==""?`<span class="price lg">${eur.format(i.price)}${i.unit&&i.unit!=="Stück"?`<small>pro ${esc(i.unit)}</small>`:""}</span>`:""}</div>
       ${S.contact?`<p class="note" style="margin:0">Interesse? ${esc(S.contact)}</p>`:""}
-      <button class="btn ghost" id="x">Schließen</button></div>`;
+      ${i.soldout?`<div class="soldtag" style="margin:0">Ausverkauft</div>`:`<div class="actions"><div class="vstep"><button class="qb" id="vm" data-d="-1" aria-label="Eins weniger">−</button><b id="vn">${cart[i.id]||0}</b><button class="qb" id="vp" data-d="1" aria-label="Eins mehr">+</button></div><span class="note" id="vt"></span></div>`}
+      <button class="btn ghost" id="x">Fertig</button></div>`;
     $("ov").hidden=false; $("x").onclick=close; SND.open();
+    if(!i.soldout){const up=()=>{const n=cart[i.id]||0;$("vn").textContent=n;$("vt").textContent=n&&i.price!=null&&i.price!==""?"= "+eur.format(n*i.price):"im Warenkorb"};up();
+      $("vp").onclick=e=>{setQty(i.id,(cart[i.id]||0)+1);up();ripple(e.currentTarget,e);SND.pop(cart[i.id]);try{navigator.vibrate&&navigator.vibrate(12)}catch{};if(!calm)$("vn").animate([{transform:"scale(1.5)"},{transform:"scale(1)"}],{duration:300,easing:"ease-out"})};
+      $("vm").onclick=e=>{const h=cart[i.id]||0;setQty(i.id,h-1);up();ripple(e.currentTarget,e);if(h)SND.down()}}
   }
 
   function parsePrice(v){const n=parseFloat(String(v).replace(/\s|€/g,"").replace(/\.(?=\d{3}\b)/g,"").replace(",","."));return isFinite(n)&&n>=0?Math.round(n*100)/100:null}
@@ -456,6 +525,11 @@ body.hascart main .wrap{padding-bottom:128px}
     $("cartbar").hidden=!L.length; document.body.classList.toggle("hascart",!!L.length);
     $("cartcount").textContent=`${pcs} Stück · ${L.length} ${L.length===1?"Artikel":"Artikel"}`;
     countTo(tot);
+    $("cth").innerHTML=L.slice(0,3).map(l=>l.i.photo?`<img src="${l.i.photo}" alt="">`:`<span>${esc(String(l.i.name).charAt(0))}</span>`).join("")+(L.length>3?`<span>+${L.length-3}</span>`:"");
+    let k=0;while(k<MS.length&&tot>=MS[k][0])k++;
+    const lo=k?MS[k-1][0]:0,hi=k<MS.length?MS[k][0]:0;
+    $("lvlbar").style.transform=`scaleX(${hi?Math.max(.03,(tot-lo)/(hi-lo)):1})`;
+    $("lvltxt").textContent=hi?`Noch ${eur.format(hi-tot)} bis Level ${k+1} ${MS[k][1].split(" ")[0]}`:"👑 Höchstes Level erreicht!";
     return tot;
   }
   const calm=matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -533,28 +607,42 @@ body.hascart main .wrap{padding-bottom:128px}
   function eggs(){
     sndIcon();
     $("snd").onclick=()=>{muted=!muted;try{localStorage.setItem("ton",muted?"aus":"an")}catch{};sndIcon();if(!muted)SND.ching();toast(muted?"Ton aus":"Ton an 🎶")};
-    // Egg 1: tap the lightning logo 5× fast
-    let taps=0,tt=0;
-    $("bolt").addEventListener("click",()=>{
-      const b=$("bolt");b.classList.remove("zap");void b.offsetWidth;b.classList.add("zap");
-      clearTimeout(tt);taps++;SND.zap(taps);try{navigator.vibrate&&navigator.vibrate(8)}catch{}
-      if(taps>=5){taps=0;party();return}
-      tt=setTimeout(()=>taps=0,1400)});
-    // Egg 2: long-press a price tag → coin flip
-    let lp=0;
-    const stop=()=>clearTimeout(lp);
-    $("list").addEventListener("pointerdown",e=>{const p=e.target.closest(".thumb .price");if(!p)return;stop();
-      lp=setTimeout(()=>{noClick=true;SND.coin();try{navigator.vibrate&&navigator.vibrate([15,60,15])}catch{}
-        if(!calm&&p.animate)p.animate([{transform:"perspective(300px) rotateY(0) scale(1)"},{transform:"perspective(300px) rotateY(540deg) scale(1.5)",offset:.6},{transform:"perspective(300px) rotateY(720deg) scale(1)"}],{duration:900,easing:"cubic-bezier(.3,.7,.3,1)"});
-        rain(["🪙","💰","✨"],12)},480)});
-    ["pointerup","pointercancel","pointerleave","pointermove"].forEach(t=>$("list").addEventListener(t,e=>{if(t!=="pointermove"||Math.abs(e.movementX)+Math.abs(e.movementY)>6)stop()}));
-    $("list").addEventListener("contextmenu",e=>{if(e.target.closest(".thumb"))e.preventDefault()});
-    // Egg 3: shake the phone (Android; iOS would need a permission prompt)
-    if(window.DeviceMotionEvent&&typeof DeviceMotionEvent.requestPermission!=="function"){
-      let last=0;
-      addEventListener("devicemotion",e=>{const a=e.accelerationIncludingGravity;if(!a)return;const m=Math.hypot(a.x||0,a.y||0,a.z||0);const now=Date.now();
-        if(m>32&&now-last>2500){last=now;SND.shake();try{navigator.vibrate&&navigator.vibrate(60)}catch{};rain(["💸","🤑","💰","✨"],30);toast("Schütteln bringt nix – die Preise sind schon unten 😎")}});
-    }
+    $("partybtn").onclick=e=>{ripple(e.currentTarget,e);party()};
+    $("slotbtn").onclick=e=>{ripple(e.currentTarget,e);openSlot()};
+    $("bolt").addEventListener("click",()=>{const b=$("bolt");b.classList.remove("zap");void b.offsetWidth;b.classList.add("zap");SND.zap(3);try{navigator.vibrate&&navigator.vibrate(8)}catch{}});
+    addEventListener("scroll",()=>{const h=document.documentElement.scrollHeight-innerHeight;$("sprog").style.transform=`scaleX(${h>0?Math.min(1,scrollY/h):0})`},{passive:true});
+    intro();
+  }
+  function intro(){
+    let seen=false;try{seen=sessionStorage.getItem("intro")==="1";sessionStorage.setItem("intro","1")}catch{}
+    if(seen||calm)return;
+    const d=document.createElement("div");d.className="intro";d.innerHTML=`<i class="ring"></i><div class="ib"><svg viewBox="0 0 24 24"><path d="M13.5 2 5 13.5h5.2L9.5 22 19 9.8h-5.6z" fill="currentColor"/></svg></div><div class="it">${esc(S.title||"Angebote & Preise")}</div>`;
+    document.body.appendChild(d);let gone=false;
+    const end=()=>{if(gone)return;gone=true;d.animate([{opacity:1},{opacity:0,transform:"scale(1.15)"}],{duration:450,easing:"ease-in"}).onfinish=()=>d.remove()};
+    d.addEventListener("click",end);setTimeout(end,1500);
+  }
+  function shuffle(a){a=a.slice();for(let k=a.length-1;k>0;k--){const j=Math.floor(Math.random()*(k+1));[a[k],a[j]]=[a[j],a[k]]}return a}
+  function openSlot(){
+    const av=S.items.filter(i=>!i.soldout&&i.photo);if(!av.length)return toast("Gerade nichts zum Überraschen");
+    $("ov").innerHTML=`<div class="sheet"><h2>🎰 Überrasch mich!</h2><div class="lights" aria-hidden="true">${"<i></i>".repeat(9)}</div>
+      <div class="reel" id="reel"><div class="strip" id="strip"></div></div><div class="lights" aria-hidden="true">${"<i></i>".repeat(9)}</div>
+      <div class="slotres" id="sres" aria-live="polite"></div>
+      <div class="actions"><button class="btn ghost" id="x">Schließen</button><div class="right"><button class="btn" id="spin">Nochmal drehen</button></div></div></div>`;
+    $("ov").hidden=false;$("x").onclick=close;
+    let busy=false;
+    const spin=()=>{if(busy)return;busy=true;$("spin").disabled=true;$("sres").innerHTML="";$("reel").classList.remove("won");
+      const pick=av[Math.floor(Math.random()*av.length)],seq=[];for(let r=0;r<(calm?0:6);r++)seq.push(...shuffle(av));seq.push(pick);
+      const st=$("strip");st.innerHTML=seq.map(i=>`<img src="${i.photo}" alt="">`).join("");
+      const H=$("reel").clientHeight,dist=(seq.length-1)*H;
+      const done=()=>{busy=false;$("spin").disabled=false;$("reel").classList.add("won");SND.ching();confetti(45);try{navigator.vibrate&&navigator.vibrate([30,50,80])}catch{}
+        const pr=pick.price!=null&&pick.price!==""?eur.format(pick.price):"Preis auf Anfrage";
+        $("sres").innerHTML=`<p class="name">${esc(pick.name)}</p><span class="price lg">${pr}</span><button class="btn" id="sadd">+ In den Warenkorb</button>`;$("sres").classList.remove("pop");void $("sres").offsetWidth;$("sres").classList.add("pop");
+        $("sadd").onclick=e=>{setQty(pick.id,(cart[pick.id]||0)+1);SND.pop(cart[pick.id]);ripple(e.currentTarget,e);toast("🛒 "+pick.name+" ist im Warenkorb");$("sadd").textContent=`✓ Im Warenkorb (${cart[pick.id]})`}};
+      if(calm||!st.animate){st.style.transform=`translateY(${-dist}px)`;return done()}
+      const an=st.animate([{transform:"translateY(0)"},{transform:`translateY(${-dist}px)`}],{duration:2800,easing:"cubic-bezier(.1,.6,.12,1)",fill:"forwards"});
+      let lastI=-1;const tick=()=>{if(!busy)return;const m=new DOMMatrix(getComputedStyle(st).transform),idx=Math.round(-m.m42/H);if(idx!==lastI){lastI=idx;tone(900+(idx%3)*120,.03,"square",.04)}requestAnimationFrame(tick)};requestAnimationFrame(tick);
+      an.onfinish=done};
+    $("spin").onclick=spin;spin();
   }
   function waText(name){
     const L=lines(),tot=L.reduce((a,l)=>a+(l.t||0),0);
